@@ -5,9 +5,39 @@ import { abi } from './Abi'
 
 export const CreateMarketForm = () => {
 	const [market, setMarket] = useState('')
+	const [account, setAccount] = useState('')
+	const [contractData, setContractData] = useState('')
 	const address = '0x595A74DDE1b1d08a48943A81602bc334474ce487'
-	const provider = new ethers.InfuraProvider('maticmum')
-	const daiContract = new ethers.Contract(address, abi, provider)
+
+	// const provider = new ethers.InfuraProvider('maticmum')
+
+	let contract: ethers.Contract
+
+	const { ethereum } = window
+	const connectMetamask = async () => {
+		if (window.ethereum !== 'undefined') {
+			const accounts = await ethereum.request({ method: 'eth_requestAccounts' })
+			setAccount(accounts[0])
+		}
+	}
+
+	const connectContract = async () => {
+		const provider = await new ethers.BrowserProvider(window.ethereum)
+		const signer = await provider.getSigner()
+		contract = await new ethers.Contract(address, abi, signer)
+		console.log(contract)
+	}
+
+	const getData = async () => {
+		const phrase = await contract.myFlower()
+		setContractData(phrase)
+	}
+
+	const changeData = async () => {
+		const txResponse = await contract.createMarket()
+		const txReceipt = await txResponse.wait()
+		console.log(txReceipt)
+	}
 
 	const searchMarket = async (
 		cutoffDate: number,
@@ -15,28 +45,8 @@ export const CreateMarketForm = () => {
 		decisionProvider: string,
 		description: string
 	) => {
-		// const marketData = await daiContract.getMarket(description, cutoffDate)
-
-		// setMarket(formatEther(marketData))
-		// if (
-		// 	market === '' ||
-		// 	market === '0x0000000000000000000000000000000000000000'
-		// ) {
-		// const createMarketData = await daiContract.createMarket(
-		// 	cutoffDate,
-		// 	decisionDate,
-		// 	decisionProvider,
-		// 	description
-		// )
-		// setMarket(formatEther(createMarketData))
-		const createMarketData = await daiContract.createMarket(
-			cutoffDate,
-			decisionDate,
-			decisionProvider,
-			description
-		)
-		setMarket(formatEther(createMarketData))
-		// }
+		const marketData = await contract.getMarket(description, cutoffDate)
+		setMarket(formatEther(marketData))
 	}
 
 	console.log('DAAAAATAAA2222222', market)
@@ -52,6 +62,12 @@ export const CreateMarketForm = () => {
 
 	return (
 		<div>
+			<button onClick={connectMetamask}>CONNECT TO METAMASK</button>
+			<p>{account}</p>
+			<button onClick={connectContract}>CONNECT TO CONTRACT</button> <br />{' '}
+			<br />
+			<button onClick={changeData}>CHANGE DATA</button> <br /> <br />
+			<button onClick={getData}>READ FROM CONTRACT</button>
 			<Formik
 				initialValues={{
 					cutoffDate: 0,
