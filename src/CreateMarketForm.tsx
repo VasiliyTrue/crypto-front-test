@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Formik, Form, Field } from 'formik'
 import { ethers, formatEther, parseEther, parseUnits } from 'ethers'
 import { abi } from './Abi'
+import { DatePicker, Space } from 'antd'
 
 export const CreateMarketForm = () => {
 	const [market, setMarket] = useState('')
@@ -95,6 +96,13 @@ export const CreateMarketForm = () => {
 			>
 				{({ isSubmitting, errors }) => (
 					<Form>
+						<Space direction='vertical'>
+							<DatePicker
+								name='cutoffDate'
+								placeholder='cutoff Date'
+								// validate={validateField}
+							/>
+						</Space>
 						<Field
 							name='cutoffDate'
 							type='string	'
