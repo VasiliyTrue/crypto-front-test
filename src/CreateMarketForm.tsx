@@ -70,6 +70,13 @@ export const CreateMarketForm = () => {
 		return null
 	}
 
+	const AntInput = (props: any) => {
+		return (
+			<Space direction='vertical'>
+				<DatePicker {...props} />
+			</Space>
+		)
+	}
 	return (
 		<div>
 			<button onClick={connectMetamask}>CONNECT TO METAMASK</button>
@@ -96,18 +103,12 @@ export const CreateMarketForm = () => {
 			>
 				{({ isSubmitting, errors }) => (
 					<Form>
-						<Space direction='vertical'>
-							<DatePicker
-								name='cutoffDate'
-								placeholder='cutoff Date'
-								// validate={validateField}
-							/>
-						</Space>
 						<Field
 							name='cutoffDate'
 							type='string	'
 							placeholder='cutoff Date'
 							validate={validateField}
+							as={AntInput}
 						/>
 						{errors.cutoffDate ? (
 							<div style={{ color: 'red' }}>{errors.cutoffDate}</div>
