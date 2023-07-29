@@ -10,7 +10,7 @@ export const CreateMarketForm = () => {
 	const address = '0x595A74DDE1b1d08a48943A81602bc334474ce487'
 
 	// const provider = new ethers.InfuraProvider('maticmum')
-
+	let signer
 	let contract: ethers.Contract
 
 	const { ethereum } = window
@@ -23,21 +23,22 @@ export const CreateMarketForm = () => {
 
 	const connectContract = async () => {
 		const provider = await new ethers.BrowserProvider(window.ethereum)
-		const signer = await provider.getSigner()
+		signer = await provider.getSigner()
 		contract = await new ethers.Contract(address, abi, signer)
-		console.log(contract)
+		console.log('contract', contract)
+		console.log('signer', signer)
 	}
 
-	const getData = async () => {
-		const phrase = await contract.myFlower()
-		setContractData(phrase)
-	}
+	// const getData = async () => {
+	// 	const phrase = await contract.myFlower()
+	// 	setContractData(phrase)
+	// }
 
-	const changeData = async () => {
-		const txResponse = await contract.createMarket()
-		const txReceipt = await txResponse.wait()
-		console.log(txReceipt)
-	}
+	// const changeData = async () => {
+	// 	const txResponse = await contract.createMarket()
+	// 	const txReceipt = await txResponse.wait()
+	// 	console.log(txReceipt)
+	// }
 
 	const searchMarket = async (
 		cutoffDate: number,
@@ -45,11 +46,19 @@ export const CreateMarketForm = () => {
 		decisionProvider: string,
 		description: string
 	) => {
-		const marketData = await contract.getMarket(description, cutoffDate)
-		setMarket(formatEther(marketData))
-	}
+		// const marketData = await contract.getMarket(description, cutoffDate)
+		console.log('contract', contract)
 
-	console.log('DAAAAATAAA2222222', market)
+		const marketData = await contract.createMarket(
+			cutoffDate,
+			decisionDate,
+			decisionProvider,
+			description
+		)
+		const txReceipt = await marketData.wait()
+		console.log('answer', txReceipt)
+		// setMarket(formatEther(marketData))
+	}
 
 	const validateField = (value: string) => {
 		let error
@@ -66,8 +75,6 @@ export const CreateMarketForm = () => {
 			<p>{account}</p>
 			<button onClick={connectContract}>CONNECT TO CONTRACT</button> <br />{' '}
 			<br />
-			<button onClick={changeData}>CHANGE DATA</button> <br /> <br />
-			<button onClick={getData}>READ FROM CONTRACT</button>
 			<Formik
 				initialValues={{
 					cutoffDate: 0,
@@ -90,7 +97,7 @@ export const CreateMarketForm = () => {
 					<Form>
 						<Field
 							name='cutoffDate'
-							type='number'
+							type='string	'
 							placeholder='cutoff Date'
 							validate={validateField}
 						/>
@@ -99,7 +106,7 @@ export const CreateMarketForm = () => {
 						) : null}
 						<Field
 							name='decisionDate'
-							type='number'
+							type='string'
 							placeholder='decision Date'
 							validate={validateField}
 						/>
