@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { ethers, formatEther, parseEther, parseUnits } from 'ethers'
 import { abi } from './Abi'
-import { Button, Form, Input, InputNumber, DatePicker } from 'antd'
+import { Form, Input, DatePicker, Button, Radio, Typography } from 'antd'
 
 export const CreateMarketForm = () => {
 	const [market, setMarket] = useState('')
@@ -61,6 +61,7 @@ export const CreateMarketForm = () => {
 	}
 
 	const { RangePicker } = DatePicker
+	const { Title } = Typography
 
 	const onFinish = (fieldsValue: any) => {
 		const rangeTimeFrom = new Date(
@@ -84,6 +85,11 @@ export const CreateMarketForm = () => {
 			<p>{account}</p>
 			<button onClick={connectContract}>CONNECT TO CONTRACT</button> <br />{' '}
 			<br />
+			<Title level={3}>Will aliens land on earth?</Title>
+			<Radio.Group>
+				<Radio.Button value='yes'>YES</Radio.Button>
+				<Radio.Button value='no'>NO</Radio.Button>
+			</Radio.Group>
 			<Form
 				name='time_related_controls'
 				// {...formItemLayout}
