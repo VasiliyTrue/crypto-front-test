@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { Formik, Form, Field } from 'formik'
 import { ethers, formatEther, parseEther, parseUnits } from 'ethers'
 import { abi } from './Abi'
-import { DatePicker, Space } from 'antd'
+import { Button, Form, Input, InputNumber, DatePicker } from 'antd'
 
 export const CreateMarketForm = () => {
 	const [market, setMarket] = useState('')
@@ -61,91 +60,82 @@ export const CreateMarketForm = () => {
 		// setMarket(formatEther(marketData))
 	}
 
-	const validateField = (value: string) => {
-		let error
-		if (!value) {
-			error = 'Required'
-			return error
-		}
-		return null
-	}
+	const { RangePicker } = DatePicker
 
-	const AntInput = (props: any) => {
-		return (
-			<Space direction='vertical'>
-				<DatePicker {...props} />
-			</Space>
+	const onFinish = (fieldsValue: any) => {
+		const rangeTimeValue = fieldsValue['range-time-picker']
+		const values: any = {
+			...fieldsValue,
+			'range-time-picker': [
+				rangeTimeValue[0].format('YYYY-MM-DD'),
+				rangeTimeValue[1].format('YYYY-MM-DD'),
+			],
+		}
+		console.log(
+			'Received values of form: ',
+			new Date(rangeTimeValue[0].format('YYYY-MM-DD')).getTime()
 		)
 	}
+
 	return (
 		<div>
 			<button onClick={connectMetamask}>CONNECT TO METAMASK</button>
 			<p>{account}</p>
 			<button onClick={connectContract}>CONNECT TO CONTRACT</button> <br />{' '}
 			<br />
-			<Formik
-				initialValues={{
-					cutoffDate: 0,
-					decisionDate: 0,
-					decisionProvider: '',
-					description: '',
-				}}
-				onSubmit={(values, { setSubmitting }) => {
-					searchMarket(
-						values.cutoffDate,
-						values.decisionDate,
-						values.decisionProvider,
-						values.description
-					)
-					alert(JSON.stringify(values, null, 2))
-					setSubmitting(false)
-				}}
+			<Form
+				name='time_related_controls'
+				// {...formItemLayout}
+				onFinish={onFinish}
+				style={{ maxWidth: 600 }}
 			>
-				{({ isSubmitting, errors }) => (
-					<Form>
-						<Field
-							name='cutoffDate'
-							type='string	'
-							placeholder='cutoff Date'
-							validate={validateField}
-							as={AntInput}
-						/>
-						{errors.cutoffDate ? (
-							<div style={{ color: 'red' }}>{errors.cutoffDate}</div>
-						) : null}
-						<Field
-							name='decisionDate'
-							type='string'
-							placeholder='decision Date'
-							validate={validateField}
-						/>
-						{errors.decisionDate ? (
-							<div style={{ color: 'red' }}>{errors.decisionDate}</div>
-						) : null}
-						<Field
-							name='decisionProvider'
-							type='string'
-							placeholder='decision Provider'
-							validate={validateField}
-						/>
-						{errors.decisionProvider ? (
-							<div style={{ color: 'red' }}>{errors.decisionProvider}</div>
-						) : null}
-						<Field
-							name='description'
-							type='string'
-							placeholder='description'
-							validate={validateField}
-						/>
-						{errors.description ? (
-							<div style={{ color: 'red' }}>{errors.description}</div>
-						) : null}
-						<button type='submit' disabled={isSubmitting}>
-							Create
-						</button>
-					</Form>
-				)}
-			</Formik>
+				<Form.Item
+					name='range-time-picker'
+					label='time period'
+					rules={[
+						{
+							required: true,
+							message: 'please select a time period',
+						},
+					]}
+				>
+					<RangePicker showTime format='YYYY-MM-DD' />
+				</Form.Item>
+				<Form.Item
+					name='decisionProvider'
+					label='decision provider'
+					rules={[
+						{
+							required: true,
+							message: 'please fill in the decision provider!',
+						},
+					]}
+				>
+					<Input />
+				</Form.Item>
+				<Form.Item
+					name='description'
+					label='description'
+					rules={[
+						{
+							required: true,
+							message: 'please fill in the description!',
+						},
+					]}
+				>
+					<Input.TextArea />
+				</Form.Item>
+				<Form.Item
+					wrapperCol={{
+						xs: { span: 24, offset: 0 },
+						sm: { span: 16, offset: 8 },
+					}}
+				>
+					<Button type='primary' htmlType='submit'>
+						Submit
+					</Button>
+				</Form.Item>
+			</Form>
 		</div>
 	)
 }
