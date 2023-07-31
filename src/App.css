@@ -1,0 +1,18 @@
+.container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding-top: 100px;
+}
+
+.question {
+	text-align: center;
+}
+
+.option {
+	margin-bottom: 20px;
+}
+
+.contractAnswer {
+	max-width: 350px;
+}

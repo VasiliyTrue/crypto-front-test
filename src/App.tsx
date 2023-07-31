@@ -7,10 +7,10 @@ import {
 	Chain,
 } from '@rainbow-me/rainbowkit'
 import { configureChains, createConfig, WagmiConfig } from 'wagmi'
-
 import { CreateMarketForm } from './CreateMarketForm'
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
 import { ethers } from 'ethers'
+import './App.css'
 
 const mumbai: Chain = {
 	id: 80001,

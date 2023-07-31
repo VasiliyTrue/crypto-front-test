@@ -6,39 +6,35 @@ import { Form, Input, DatePicker, Button, Radio, Typography } from 'antd'
 export const CreateMarketForm = () => {
 	const [market, setMarket] = useState('')
 	const [account, setAccount] = useState('')
-	const [contractData, setContractData] = useState('')
-	const address = '0x595A74DDE1b1d08a48943A81602bc334474ce487'
+	const [contractTransactionReceipt, setContractTransactionReceipt] =
+		useState('')
 
-	// const provider = new ethers.InfuraProvider('maticmum')
+	const address = '0x595A74DDE1b1d08a48943A81602bc334474ce487'
 	let signer
 	let contract: ethers.Contract
-
 	const { ethereum } = window
+
 	const connectMetamask = async () => {
 		if (window.ethereum !== 'undefined') {
 			const accounts = await ethereum.request({ method: 'eth_requestAccounts' })
 			setAccount(accounts[0])
 		}
-	}
-
-	const connectContract = async () => {
 		const provider = await new ethers.BrowserProvider(window.ethereum)
 		signer = await provider.getSigner()
 		contract = await new ethers.Contract(address, abi, signer)
-		console.log('contract', contract)
-		console.log('signer', signer)
+		console.log('DOOOONEEE', contract)
+		console.log('ACCOUNTT', account)
 	}
 
-	// const getData = async () => {
-	// 	const phrase = await contract.myFlower()
-	// 	setContractData(phrase)
+	// const connectContract = async () => {
+	// 	const provider = await new ethers.BrowserProvider(window.ethereum)
+	// 	signer = await provider.getSigner()
+	// 	contract = await new ethers.Contract(address, abi, signer)
 	// }
 
-	// const changeData = async () => {
-	// 	const txResponse = await contract.createMarket()
-	// 	const txReceipt = await txResponse.wait()
-	// 	console.log(txReceipt)
-	// }
+	useEffect(() => {
+		connectMetamask()
+	}, [account])
 
 	const searchMarket = async (
 		cutoffDate: number,
@@ -46,9 +42,6 @@ export const CreateMarketForm = () => {
 		decisionProvider: string,
 		description: string
 	) => {
-		// const marketData = await contract.getMarket(description, cutoffDate)
-		console.log('contract', contract)
-
 		const marketData = await contract.createMarket(
 			cutoffDate,
 			decisionDate,
@@ -56,8 +49,8 @@ export const CreateMarketForm = () => {
 			description
 		)
 		const txReceipt = await marketData.wait()
-		console.log('answer', txReceipt)
-		// setMarket(formatEther(marketData))
+		console.log('answer', txReceipt.blockHash)
+		setContractTransactionReceipt(txReceipt.blockHash)
 	}
 
 	const { RangePicker } = DatePicker
@@ -80,69 +73,67 @@ export const CreateMarketForm = () => {
 	}
 
 	return (
-		<div>
-			<button onClick={connectMetamask}>CONNECT TO METAMASK</button>
-			<p>{account}</p>
-			<button onClick={connectContract}>CONNECT TO CONTRACT</button> <br />{' '}
-			<br />
+		<div className='container'>
 			<Title level={3}>Will aliens land on earth?</Title>
-			<Radio.Group>
+			<Radio.Group className='option'>
 				<Radio.Button value='yes'>YES</Radio.Button>
 				<Radio.Button value='no'>NO</Radio.Button>
 			</Radio.Group>
-			<Form
-				name='time_related_controls'
-				// {...formItemLayout}
-				onFinish={onFinish}
-				style={{ maxWidth: 600 }}
-			>
-				<Form.Item
-					name='timePeriod'
-					label='time period'
-					rules={[
-						{
-							required: true,
-							message: 'please select a time period',
-						},
-					]}
+			<div className='center'>
+				<Form
+					name='time_related_controls'
+					onFinish={onFinish}
+					style={{ maxWidth: 600 }}
 				>
-					<RangePicker showTime format='YYYY-MM-DD' />
-				</Form.Item>
-				<Form.Item
-					name='decisionProvider'
-					label='decision provider'
-					rules={[
-						{
-							required: true,
-							message: 'please fill in the decision provider!',
-						},
-					]}
-				>
-					<Input />
-				</Form.Item>
-				<Form.Item
-					name='description'
-					label='description'
-					rules={[
-						{
-							required: true,
-							message: 'please fill in the description!',
-						},
-					]}
-				>
-					<Input.TextArea />
-				</Form.Item>
-				<Form.Item
-					wrapperCol={{
-						xs: { span: 24, offset: 0 },
-						sm: { span: 16, offset: 8 },
-					}}
-				>
-					<Button type='primary' htmlType='submit'>
-						Submit
-					</Button>
-				</Form.Item>
-			</Form>
+					<Form.Item
+						name='timePeriod'
+						label='time period'
+						rules={[
+							{
+								required: true,
+								message: 'please select a time period',
+							},
+						]}
+					>
+						<RangePicker showTime format='YYYY-MM-DD' />
+					</Form.Item>
+					<Form.Item
+						name='decisionProvider'
+						label='decision provider'
+						rules={[
+							{
+								required: true,
+								message: 'please fill in the decision provider!',
+							},
+						]}
+					>
+						<Input />
+					</Form.Item>
+					<Form.Item
+						name='description'
+						label='description'
+						rules={[
+							{
+								required: true,
+								message: 'please fill in the description!',
+							},
+						]}
+					>
+						<Input.TextArea />
+					</Form.Item>
+					<Form.Item
+						wrapperCol={{
+							xs: { span: 24, offset: 0 },
+							sm: { span: 16, offset: 8 },
+						}}
+					>
+						<Button type='primary' htmlType='submit'>
+							Submit
+						</Button>
+					</Form.Item>
+				</Form>
+			</div>
+			<div className='contractAnswer'>{contractTransactionReceipt}</div>
 		</div>
 	)
 }
