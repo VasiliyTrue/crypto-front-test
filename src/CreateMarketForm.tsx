@@ -1,47 +1,66 @@
 import React, { useEffect, useState } from 'react'
-import { ethers, formatEther, parseEther, parseUnits } from 'ethers'
+import { ethers, formatEther } from 'ethers'
 import { abi } from './Abi'
-import { Form, Input, DatePicker, Button, Radio, Typography } from 'antd'
+import {
+	Form,
+	Input,
+	DatePicker,
+	Button,
+	Radio,
+	Typography,
+	Alert,
+	Space,
+	Spin,
+	List,
+} from 'antd'
+
+interface fetchedMarkets {
+	id: string
+	description: string
+	address: string
+	providerAddress: string
+	state: boolean
+	winToken: any
+	lastEventDate: number
+}
 
 export const CreateMarketForm = () => {
-	const [market, setMarket] = useState('')
-	const [account, setAccount] = useState('')
+	const [searchMarketData, setSearchMarketData] = useState<string>('')
 	const [contractTransactionReceipt, setContractTransactionReceipt] =
-		useState('')
+		useState<string>('')
+	const [contractTransactionLoading, setContractTransactionLoading] =
+		useState<boolean>(false)
+	const [fetchedMarkets, setFetchedMarkets] = useState<fetchedMarkets[]>([])
 
 	const address = '0x595A74DDE1b1d08a48943A81602bc334474ce487'
 	let signer
 	let contract: ethers.Contract
-	const { ethereum } = window
 
-	const connectMetamask = async () => {
-		if (window.ethereum !== 'undefined') {
-			const accounts = await ethereum.request({ method: 'eth_requestAccounts' })
-			setAccount(accounts[0])
-		}
+	const connectToBlockchain = async () => {
 		const provider = await new ethers.BrowserProvider(window.ethereum)
 		signer = await provider.getSigner()
 		contract = await new ethers.Contract(address, abi, signer)
-		console.log('DOOOONEEE', contract)
-		console.log('ACCOUNTT', account)
 	}
 
-	// const connectContract = async () => {
-	// 	const provider = await new ethers.BrowserProvider(window.ethereum)
-	// 	signer = await provider.getSigner()
-	// 	contract = await new ethers.Contract(address, abi, signer)
-	// }
-
 	useEffect(() => {
-		connectMetamask()
-	}, [account])
+		connectToBlockchain()
+	})
 
-	const searchMarket = async (
+	const searchMarket = async (description: string, cutoffDate: number) => {
+		const searchMarketData = await contract.getMarket(description, cutoffDate)
+		if (formatEther(searchMarketData) !== '0.0') {
+			setSearchMarketData(searchMarketData)
+		}
+		return searchMarketData
+	}
+
+	const createMarket = async (
 		cutoffDate: number,
 		decisionDate: number,
 		decisionProvider: string,
 		description: string
 	) => {
+		setContractTransactionLoading(true)
 		const marketData = await contract.createMarket(
 			cutoffDate,
 			decisionDate,
@@ -49,8 +68,34 @@ export const CreateMarketForm = () => {
 			description
 		)
 		const txReceipt = await marketData.wait()
-		console.log('answer', txReceipt.blockHash)
 		setContractTransactionReceipt(txReceipt.blockHash)
+		setContractTransactionLoading(false)
+	}
+
+	const handleFetchMarkets = async () => {
+		const response = await fetch(`https://emp-backend-test.fly.dev/markets`)
+		const data: fetchedMarkets[] = await response.json()
+		setFetchedMarkets(
+			data.sort((objA, objB) => objA.lastEventDate - objB.lastEventDate)
+		)
+	}
+
+	const searchOrCreateMarket = async (
+		cutoffDate: number,
+		decisionDate: number,
+		decisionProvider: string,
+		description: string
+	) => {
+		const searchMarketAnswer = await searchMarket(description, cutoffDate)
+		if (formatEther(searchMarketAnswer) === '0.0') {
+			await createMarket(
+				cutoffDate,
+				decisionDate,
+				decisionProvider,
+				description
+			)
+		}
+		await handleFetchMarkets()
 	}
 
 	const { RangePicker } = DatePicker
@@ -64,7 +109,7 @@ export const CreateMarketForm = () => {
 			fieldsValue['timePeriod'][1].format('YYYY-MM-DD')
 		).getTime()
 
-		searchMarket(
+		searchOrCreateMarket(
 			rangeTimeFrom,
 			rangeTimeTo,
 			fieldsValue.decisionProvider,
@@ -83,7 +128,7 @@ export const CreateMarketForm = () => {
 				<Form
 					name='time_related_controls'
 					onFinish={onFinish}
-					style={{ maxWidth: 600 }}
+					style={{ maxWidth: 800 }}
 				>
 					<Form.Item
 						name='timePeriod'
@@ -127,13 +172,48 @@ export const CreateMarketForm = () => {
 							sm: { span: 16, offset: 8 },
 						}}
 					>
-						<Button type='primary' htmlType='submit'>
+						<Button
+							type='primary'
+							htmlType='submit'
+							disabled={contractTransactionLoading}
+						>
 							Submit
 						</Button>
 					</Form.Item>
 				</Form>
 			</div>
-			<div className='contractAnswer'>{contractTransactionReceipt}</div>
+			<div className='contractAnswer'>
+				{contractTransactionLoading && (
+					<Space size='large'>
+						<Spin size='large' />
+					</Space>
+				)}
+				{searchMarketData && (
+					<Alert
+						message={`Market  already exist: ${searchMarketData}`}
+						type='success'
+						showIcon
+					/>
+				)}
+				{contractTransactionReceipt && (
+					<Alert
+						message='Market created successfully'
+						type='success'
+						showIcon
+					/>
+				)}
+			</div>
+			{fetchedMarkets.length > 0 && (
+				<>
+					<Title level={4}>Markets list:</Title>
+					<List
+						size='small'
+						bordered
+						dataSource={fetchedMarkets}
+						renderItem={item => <List.Item>{item.address}</List.Item>}
+					/>
+				</>
+			)}
 		</div>
 	)
 }

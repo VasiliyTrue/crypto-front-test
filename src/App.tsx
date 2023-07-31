@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import '@rainbow-me/rainbowkit/styles.css'
 import {
 	ConnectButton,
@@ -9,7 +9,6 @@ import {
 import { configureChains, createConfig, WagmiConfig } from 'wagmi'
 import { CreateMarketForm } from './CreateMarketForm'
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
-import { ethers } from 'ethers'
 import './App.css'
 
 const mumbai: Chain = {
@@ -56,7 +55,7 @@ const { publicClient, chains } = configureChains(
 
 const { connectors } = getDefaultWallets({
 	appName: 'My RainbowKit App',
-	projectId: 'YOUR_PROJECT_ID',
+	projectId: '333',
 	chains,
 })
 
