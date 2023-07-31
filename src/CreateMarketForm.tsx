@@ -63,17 +63,18 @@ export const CreateMarketForm = () => {
 	const { RangePicker } = DatePicker
 
 	const onFinish = (fieldsValue: any) => {
-		const rangeTimeValue = fieldsValue['range-time-picker']
-		const values: any = {
-			...fieldsValue,
-			'range-time-picker': [
-				rangeTimeValue[0].format('YYYY-MM-DD'),
-				rangeTimeValue[1].format('YYYY-MM-DD'),
-			],
-		}
-		console.log(
-			'Received values of form: ',
-			new Date(rangeTimeValue[0].format('YYYY-MM-DD')).getTime()
+		const rangeTimeFrom = new Date(
+			fieldsValue['timePeriod'][0].format('YYYY-MM-DD')
+		).getTime()
+		const rangeTimeTo = new Date(
+			fieldsValue['timePeriod'][1].format('YYYY-MM-DD')
+		).getTime()
+
+		searchMarket(
+			rangeTimeFrom,
+			rangeTimeTo,
+			fieldsValue.decisionProvider,
+			fieldsValue.description
 		)
 	}
 
@@ -90,7 +91,7 @@ export const CreateMarketForm = () => {
 				style={{ maxWidth: 600 }}
 			>
 				<Form.Item
-					name='range-time-picker'
+					name='timePeriod'
 					label='time period'
 					rules={[
 						{
