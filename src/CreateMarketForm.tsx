@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { ethers, formatEther } from 'ethers'
+import { formatEther } from 'ethers'
 import { abi } from './Abi'
 import {
 	useConnect,
