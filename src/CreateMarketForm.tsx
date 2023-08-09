@@ -2,6 +2,14 @@ import React, { useEffect, useState } from 'react'
 import { ethers, formatEther } from 'ethers'
 import { abi } from './Abi'
 import {
+	useConnect,
+	useContractEvent,
+	useContractRead,
+	useContractWrite,
+	usePublicClient,
+	useWalletClient,
+} from 'wagmi'
+import {
 	Form,
 	Input,
 	DatePicker,
@@ -33,22 +41,28 @@ export const CreateMarketForm = () => {
 	const [fetchedMarkets, setFetchedMarkets] = useState<fetchedMarkets[]>([])
 
 	const address = '0x595A74DDE1b1d08a48943A81602bc334474ce487'
-	let signer
-	let contract: ethers.Contract
 
-	const connectToBlockchain = async () => {
-		const provider = await new ethers.BrowserProvider(window.ethereum)
-		signer = await provider.getSigner()
-		contract = await new ethers.Contract(address, abi, signer)
-	}
+	const { connect } = useConnect()
 
-	useEffect(() => {
-		connectToBlockchain()
+	const { data, write } = useContractWrite({
+		address: address,
+		abi: abi,
+		functionName: 'createMarket',
 	})
 
+	useEffect(() => {
+		connect()
+	}, [connect])
+
 	const searchMarket = async (description: string, cutoffDate: number) => {
-		const searchMarketData = await contract.getMarket(description, cutoffDate)
-		if (formatEther(searchMarketData) !== '0.0') {
+		// eslint-disable-next-line react-hooks/rules-of-hooks
+		const { data } = await useContractRead({
+			address: '0xecb504d39723b0be0e3a9aa33d646642d1051ee1',
+			abi: abi,
+			functionName: 'getHunger',
+			args: [description, cutoffDate],
+		})
+		if (formatEther(data) !== '0.0') {
 			setSearchMarketData(searchMarketData)
 		}
 		return searchMarketData
@@ -61,7 +75,7 @@ export const CreateMarketForm = () => {
 		description: string
 	) => {
 		setContractTransactionLoading(true)
-		const marketData = await contract.createMarket(
+		const marketData = await write.createMarket(
 			cutoffDate,
 			decisionDate,
 			decisionProvider,
